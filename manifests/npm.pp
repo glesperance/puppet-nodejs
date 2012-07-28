@@ -3,11 +3,6 @@ class nodejs::npm($user) {
   $NPM_PATH = '/usr/local/src/npm'
   $NPM_REPO = 'git://github.com/isaacs/npm.git'
   
-  package { "npm-git-dep":
-      name    => 'git'
-    , ensure  => "installed"
-  }
-  
   exec { 'npm-git-clone':
       command => "git clone ${NPM_REPO} ${NPM_PATH}"
     , path    => ['/usr/bin']
