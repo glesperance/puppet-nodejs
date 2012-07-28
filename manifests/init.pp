@@ -1,6 +1,6 @@
 class nodejs($user) {
 
-  $node_ver = "v0.6.7"
+  $node_ver = "v0.8.4"
   $node_tar = "node-$node_ver.tar.gz"
 
   package { "openssl":
