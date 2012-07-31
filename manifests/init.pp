@@ -1,68 +1,54 @@
 class nodejs($user) {
 
-  $node_ver = "v0.8.4"
-  $node_tar = "node-$node_ver.tar.gz"
-
-  package { "openssl":
-    ensure => "installed"
+  case $operatingsystemrelease {
+    "11.04": {
+      $repository="deb http://ppa.launchpad.net/chris-lea/node.js/ubuntu natty main"
+    }
+    "11.10": {
+      $repository="deb http://ppa.launchpad.net/chris-lea/node.js/ubuntu oneiric main"
+    }
+    "12.04": {
+      $repository="deb http://ppa.launchpad.net/chris-lea/node.js/ubuntu precise main"
+    }
   }
 
-  package { "libcurl4-openssl-dev":
-    ensure => "installed"
+  package { "build-essential":
+    ensure => latest
+  }
+
+  package { "python-software-properties":
+    ensure => latest
+  }
+
+  exec { "chris-lea-apt-repo":
+    path => "/bin:/usr/bin",
+    command => "echo '${repository}' >> /etc/apt/sources.list",
+    unless => "cat /etc/apt/sources.list | grep chris-lea",
+    require => Package["python-software-properties"],
   }
   
-  package { 'build-essential':
-    ensure  => installed
-  }
-
-  file { "/tmp/$node_tar":
-      source => "puppet:///modules/nodejs/$node_tar"
-    , ensure => "present"
-  }
-
-  exec { "extract_node":
-      command => "tar -xzf $node_tar"
-    , cwd => "/tmp"
-    , creates => "/tmp/node-$node_ver"
-    , require => File["/tmp/$node_tar"]
-    , path    => ["/usr/bin/","/bin/"]
-  }
-
-  exec { "bash ./configure":
-      alias => "configure_node"
-    , cwd => "/tmp/node-$node_ver"
-    , require => [Exec["extract_node"], Package["openssl"], Package["libcurl4-openssl-dev"], Package["build-essential"]]
-    , timeout => 0
-    , creates => "/tmp/node-$node_ver/.lock-wscript"
-    , path    => ["/usr/bin/","/bin/"]
-  }
-
-  file { "/tmp/node-$node_ver":
-      ensure => "directory"
-    , require => Exec["configure_node"]
-  }
-
-  exec { "make_node":
-      command => "make"
-    , cwd => "/tmp/node-$node_ver"
-    , require => Exec["configure_node"]
-    , timeout => 0
-    , creates	=> "/tmp/node-$node_ver/tools/js2c.pyc"
-    , path    => ["/usr/bin/","/bin/"]
-  }
-
-  exec { "install_node":
-      command => "make install"
-    , cwd     => "/tmp/node-$node_ver"
-    , require => Exec["make_node"]
-    , timeout => 0
-    , path    => ["/usr/bin/","/bin/"]
-    , creates => '/usr/local/bin/node'
-    , before  => Class['nodejs::npm']
+  exec { "chris-lea-apt-key":
+    path => "/bin:/usr/bin",
+    command => "apt-key adv --keyserver keyserver.ubuntu.com --recv C7917B12",
+    unless => "apt-key list | grep chris-lea",
+    require => Exec["chris-lea-apt-repo"],
   }
   
-  class {"nodejs::npm": 
-      user    => $user
+  exec { "update-apt":
+    path => "/bin:/usr/bin",
+    command => "apt-get update",
+    unless => "ls /usr/bin | grep mongo",
+    require => Exec["chris-lea-apt-key"],
+  }
+
+  package { 'nodejs': 
+      ensure  => installed
+    , require => [Exec['update-apt']]
+  }
+
+  package { "npm":
+      ensure  => installed
+    , require => [Exec['update-apt']]
   }
   
 }
