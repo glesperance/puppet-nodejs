@@ -37,7 +37,7 @@ class nodejs($user) {
   exec { "update-apt":
     path => "/bin:/usr/bin",
     command => "apt-get update",
-    unless => "ls /usr/bin | grep mongo",
+    unless => "ls /usr/bin | grep node",
     require => Exec["chris-lea-apt-key"],
   }
 
