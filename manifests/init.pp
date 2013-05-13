@@ -45,11 +45,6 @@ class nodejs($user) {
       ensure  => installed
     , require => [Exec['update-apt']]
   }
-
-  package { "npm":
-      ensure  => installed
-    , require => [Exec['update-apt']]
-  }
   
 }
 
