@@ -16,34 +16,22 @@ class nodejs($user) {
     ensure => latest
   }
 
-  package { "python-software-properties":
-    ensure => latest
-  }
-
   exec { "chris-lea-apt-repo":
     path => "/bin:/usr/bin",
     command => "echo '${repository}' >> /etc/apt/sources.list",
-    unless => "cat /etc/apt/sources.list | grep chris-lea",
-    require => Package["python-software-properties"],
+    unless => "cat /etc/apt/sources.list | grep chris-lea"
   }
   
   exec { "chris-lea-apt-key":
-    path => "/bin:/usr/bin",
+    path    => "/bin:/usr/bin",
     command => "apt-key adv --keyserver keyserver.ubuntu.com --recv C7917B12",
-    unless => "apt-key list | grep chris-lea",
+    unless  => "apt-key list | grep chris-lea",
     require => Exec["chris-lea-apt-repo"],
-  }
-  
-  exec { "update-apt":
-    path => "/bin:/usr/bin",
-    command => "apt-get update",
-    unless => "ls /usr/bin | grep node",
-    require => Exec["chris-lea-apt-key"],
+    before  => Exec['apt-get update']
   }
 
   package { 'nodejs': 
-      ensure  => installed
-    , require => [Exec['update-apt']]
+    ensure  => installed
   }
   
 }
