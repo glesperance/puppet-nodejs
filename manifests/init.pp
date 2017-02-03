@@ -6,7 +6,7 @@ class nodejs($version = '0.12') {
 
   exec { "nodesource-ppa":
       path    => "/bin:/usr/bin"
-    , command => "wget -qO- https://deb.nodesource.com/setup_${version} | bash -"
+    , command => "curl -L https://deb.nodesource.com/setup_${version} | bash -"
     , unless  => "test -f /etc/apt/sources.list.d/nodesource.list && cat /etc/apt/sources.list.d/nodesource.list | grep node_${version}"
   }
 
